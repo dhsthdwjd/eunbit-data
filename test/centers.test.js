@@ -30,6 +30,9 @@ test("sigunguOf 는 띄어쓰기 없는 주소도 읽는다", () => {
   assert.equal(sigunguOf("대전중구호동88-6 사회복지법인"), "중구");
   assert.equal(sigunguOf("전라남도강진군강진읍남성리7"), "강진군");
   assert.equal(sigunguOf("천안시 서북구 미라11길"), null);
+  assert.equal(sigunguOf("서울시 강서구 화곡동"), "강서구");
+  assert.equal(sigunguOf("부산시 해운대구"), "해운대구");
+  assert.equal(sigunguOf("전북특별자치도 전주시 완산구"), "전주시");
 });
 
 test("fillMissingRegions 는 시군구 줄기로 지역을 채우고 겹치는 줄기는 쓰지 않는다", () => {
