@@ -1,0 +1,14 @@
+{
+  "name": "eunbit-data",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "sync": "node scripts/sync.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}
