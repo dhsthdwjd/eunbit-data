@@ -16,7 +16,7 @@ const MIN_INTERVAL_MS = 20 * 3600 * 1000;
 /** "서울특별시 강북구수유동" → "강북구", "경기 안산시 상록구 일동" → "안산시" (시·군·구 첫 단위) */
 // 시도 표기 (긴 것부터). 주소 앞에서 떼어내고 남은 부분에서 시·군·구를 찾는다
 // 시도 표기: "서울", "서울시", "서울특별시", "경상남도", "전북특별자치도" 등. 뒤의 시·도 꼬리까지 함께 뗀다
-const SIDO = /^(?:서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충청북|충북|충청남|충남|전라북|전북|전라남|전남|경상북|경북|경상남|경남|제주|전남광주)(?:특별자치시|특별자치도|통합특별시|특별시|광역시|도|시)?/;
+const SIDO = /^(?:(?:서울|부산|대구|인천|광주|대전|울산|세종)(?:특별자치시|특별시|광역시|시)?|(?:경기|강원|충청북|충청남|전라북|전라남|경상북|경상남|제주)(?:특별자치도|도)?|(?:충북|충남|전북|전남|경북|경남)(?:특별자치도|도)?|전남광주(?:통합특별시)?)/;
 
 function sigunguOf(addr, {requireSido = true} = {}) {
   const s = str(addr);
@@ -50,7 +50,17 @@ function fillMissingRegions(centers) {
       .filter(([, regions]) => regions.size === 1)
       .sort((a, b) => b[0].length - a[0].length);
   return centers.map((c) => {
-    if (c.region) return c;
+    if (c.region && c.sigungu) return c;
+    if (c.region) {
+      // 지역은 알지만 시군구가 없으면, 같은 지역의 시군구 줄기로만 이름·주소를 맞춘다
+      const texts = [c.address, c.name].map((t) => (t ?? "").replace(/^\d{3}-?\d{3}\s*/, "").replace(/\s+/g, "").replace(SIDO, ""));
+      for (const t of texts) {
+        const hit = [...byStem.entries()].sort((a, b) => b[0].length - a[0].length)
+            .find(([stem, regions]) => stem.length >= 2 && regions.has(c.region) && t.startsWith(stem));
+        if (hit) return {...c, sigungu: hit[1].get(c.region)};
+      }
+      return c;
+    }
     const texts = [c.address, c.name].map((t) => (t ?? "").replace(/^\d{3}-?\d{3}\s*/, "").replace(/\s+/g, ""));
     for (const t of texts) {
       const hit = stems.find(([stem]) => stem.length >= 2 && t.startsWith(stem));
@@ -86,7 +96,8 @@ function toCenter(r) {
     name: name.replace(/\(일자리\)$/, "").trim(),
     kind: kindOf(name),
     region,
-    sigungu: sigunguOf(zip) ?? sigunguOf(name),
+    // 이름에서 시군구를 바로 자르면 "서울강서시니어클럽" → "강서시" 처럼 틀린다. 이름은 fillMissingRegions 에서 확인된 시군구와만 맞춘다
+    sigungu: sigunguOf(zip),
     address,
   };
 }

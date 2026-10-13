@@ -33,6 +33,8 @@ test("sigunguOf 는 띄어쓰기 없는 주소도 읽는다", () => {
   assert.equal(sigunguOf("서울시 강서구 화곡동"), "강서구");
   assert.equal(sigunguOf("부산시 해운대구"), "해운대구");
   assert.equal(sigunguOf("전북특별자치도 전주시 완산구"), "전주시");
+  assert.equal(sigunguOf("서울 도봉구쌍문1동 361-8"), "도봉구");
+  assert.equal(sigunguOf("경기도 광주시 오포읍"), "광주시");
 });
 
 test("fillMissingRegions 는 시군구 줄기로 지역을 채우고 겹치는 줄기는 쓰지 않는다", () => {
@@ -51,4 +53,13 @@ test("fillMissingRegions 는 시군구 줄기로 지역을 채우고 겹치는 �
   assert.equal(out[4].sigungu, "천안시");
   assert.equal(out[5].region, "jeonnam_gwangju");
   assert.equal(out[6].region, null);
+});
+
+test("지역은 있고 시군구가 없으면 같은 지역의 시군구 줄기로만 채운다", () => {
+  const out = fillMissingRegions([
+    {id: "1", name: "a", region: "seoul", sigungu: "강서구"},
+    {id: "2", name: "b", region: "busan", sigungu: "강서구"},
+    {id: "3", name: "서울강서시니어클럽", region: "seoul", sigungu: null, address: null},
+  ]);
+  assert.equal(out[2].sigungu, "강서구");
 });
