@@ -38,6 +38,11 @@ jobs:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
+      - name: 센터 목록 (하루 한 번)
+        run: node scripts/centers.js
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+
       - name: 바뀌었으면 커밋
         run: |
           if git diff --quiet -- docs; then

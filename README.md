@@ -11,6 +11,13 @@
    - 주소: `https://dhsthdwjd.github.io/eunbit-data/jobs.json` (앱 `values/strings.xml`의 `data_url`)
 5. 처음 보는 공고면 FCM 토픽 `job_{지역키}`로 푸시 (지역키는 `scripts/lib.js`의 `REGIONS`)
 
+## 센터 목록 (centers.json)
+
+- `scripts/centers.js`가 하루 한 번 노인일자리 수행기관 API(`JobBsnInfoService/getJobOperInsttList`)로 시니어클럽·노인복지관 등 목록을 만든다
+- 주소: `https://dhsthdwjd.github.io/eunbit-data/centers.json`
+- API가 전화번호를 가려서 주므로 이름·종류·주소만 담는다. 앱은 기관 이름으로 지도 검색을 열어 전화번호를 보여준다
+- 주소에 시도가 없으면 기관 이름, 다른 기관에서 얻은 "시군구 → 지역" 표로 지역을 채운다. 그래도 못 정하면 뺀다 (약 230곳)
+
 ## 지역을 정하는 방법
 
 - 목록의 근무지(`workPlcNm`)가 있으면 그 지역 (`regionFrom: "workplace"`). 지역 알림을 보낸다.
