@@ -3,6 +3,7 @@
 
 const BASE_URL = "https://apis.data.go.kr/B552474/SenuriService";
 const PAGE_SIZE = 100;
+const DETAIL_VERSION = 2;
 
 // 고용형태 (emplymShp). API 의 emplymShpNm 에도 코드가 그대로 와서 이름은 여기서 붙인다
 const EMPLOYMENT = {
@@ -124,6 +125,35 @@ function regionOf(text) {
   return null;
 }
 
+/** 여러 줄 글: 줄바꿈은 살리고 줄 안의 공백만 정리, 빈 줄은 뺀다 */
+function multiline(v) {
+  if (v == null) return null;
+  const lines = String(v).replace(/\r\n?/g, "\n").split("\n")
+      .map((l) => l.replace(/[ \t\u00a0]+/g, " ").trim())
+      .filter(Boolean);
+  return lines.length ? lines.join("\n") : null;
+}
+
+// 공고 등록 화면의 우대 조건 체크 항목. 우대사항(etcItm) 맨 앞에 ", " 로 이어 붙어 온다
+const PREFERENCE_TAGS = [
+  "(준)고령자(50세이상)", "고용촉진장려금대상자", "보훈취업지원대상자", "장기복무 제대군인",
+  "북한이탈주민", "고용허가제", "장애인", "운전면허증", "차량소지자", "여성가장", "국가유공자",
+];
+
+/** 우대사항 앞의 체크 항목을 떼어낸다 → {tags, rest}. 목록에 없는 항목을 만나면 거기서 멈춘다 */
+function splitPreferences(text) {
+  const tags = [];
+  let rest = text ?? "";
+  for (;;) {
+    const tag = PREFERENCE_TAGS.find((t) => rest.startsWith(t) && /^($|[,\s])/.test(rest.slice(t.length)));
+    if (!tag) break;
+    tags.push(tag);
+    rest = rest.slice(tag.length).replace(/^,\s*/, "");
+    if (!rest.startsWith(",") && /^\s/.test(rest)) { rest = rest.trimStart(); if (!PREFERENCE_TAGS.some((t) => rest.startsWith(t))) break; }
+  }
+  return {tags, rest: rest.trim() || null};
+}
+
 /** "0000-4618-4112" 처럼 자리를 채운 값은 걸 수 없는 번호라 버린다 */
 function phoneOf(v) {
   const s = str(v);
@@ -174,7 +204,12 @@ function toDetail(r) {
     phone: phoneOf(r.clerkContt),
     address: str(r.plDetAddr),
     business: str(r.plbizNm),
-    etc: str(r.etcItm),
+    ...(() => {
+      const {tags, rest} = splitPreferences(multiline(r.etcItm));
+      return {etcTags: tags, etc: rest};
+    })(),
+    // 상세 형식이 바뀌면 올린다 → sync 가 예전 형식 상세를 다시 받는다
+    v: DETAIL_VERSION,
     homepage: urlOf(r.homepage),
   };
 }
@@ -258,6 +293,9 @@ function buildMessages(newJobs) {
 }
 
 module.exports = {
+  DETAIL_VERSION,
+  multiline,
+  splitPreferences,
   BASE_URL,
   EMPLOYMENT,
   REGIONS,

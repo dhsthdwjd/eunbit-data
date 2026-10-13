@@ -4,7 +4,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const {fetchOpenJobs, fetchDetail, fillRegion, isOpen, buildMessages} = require("./lib");
+const {fetchOpenJobs, fetchDetail, fillRegion, isOpen, buildMessages, DETAIL_VERSION} = require("./lib");
 
 const OUT = path.join(__dirname, "..", "docs", "jobs.json");
 // 한 번 실행에 상세를 받을 최대 공고 수. 나머지는 다음 실행에
@@ -62,9 +62,11 @@ function merge(prev, fetched, now) {
   return {jobs, newIds};
 }
 
-/** 상세가 없는 공고(새 공고)의 상세를 받는다 */
+/** 상세가 없는 공고(새 공고)와 예전 형식 상세를 받는다 */
 async function fillDetails(key, jobs) {
-  const need = jobs.filter((j) => !j.detail);
+  // 상세가 없거나 예전 형식이면 (새 공고 먼저)
+  const need = jobs.filter((j) => !j.detail || j.detail.v !== DETAIL_VERSION)
+      .sort((a, b) => (a.detail ? 1 : 0) - (b.detail ? 1 : 0));
   let ok = 0;
   let fail = 0;
   for (const j of need.slice(0, DETAIL_PER_RUN)) {

@@ -101,3 +101,16 @@ test("merge 는 이전 상세와 처음 본 시각을 이어받고 새 공고만
   assert.deepEqual([...newIds], ["new"]);
   assert.equal(merge(null, [{id: "x"}], now).newIds.size, 0);
 });
+
+test("multiline 은 줄바꿈을 살리고 줄 안 공백만 정리한다", () => {
+  assert.equal(lib.multiline("가능자\r\n- 인근거주자 \r\n\r\n-  장기근무자"), "가능자\n- 인근거주자\n- 장기근무자");
+});
+
+test("splitPreferences 는 앞에 붙은 체크 항목만 떼어낸다", () => {
+  assert.deepEqual(lib.splitPreferences("운전면허증, 장애인, 차량소지자 면접 후 근무 바로 가능자\n- 인근거주자"),
+    {tags: ["운전면허증", "장애인", "차량소지자"], rest: "면접 후 근무 바로 가능자\n- 인근거주자"});
+  assert.deepEqual(lib.splitPreferences("(준)고령자(50세이상), 보훈취업지원대상자, 장기복무 제대군인, 장애인"),
+    {tags: ["(준)고령자(50세이상)", "보훈취업지원대상자", "장기복무 제대군인", "장애인"], rest: null});
+  assert.deepEqual(lib.splitPreferences("장애인 - 국가기관 경력자 우대"), {tags: ["장애인"], rest: "- 국가기관 경력자 우대"});
+  assert.deepEqual(lib.splitPreferences("장애인용 화장실 청소"), {tags: [], rest: "장애인용 화장실 청소"});
+});
