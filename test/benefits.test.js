@@ -41,3 +41,9 @@ test("sortBenefits 는 노년 전용을 먼저, 그다음 조회수 순", () => 
   ]);
   assert.deepEqual(out.map((x) => x.name), ["c", "b", "a"]);
 });
+
+test("toLocal 은 '-'나 기관 이름처럼 시군구가 아닌 값을 버린다", () => {
+  assert.equal(toLocal({servId: "a", servNm: "x", ctpvNm: "경기도", sggNm: "-", servDtlLink: "l"}).sigungu, null);
+  assert.equal(toLocal({servId: "b", servNm: "x", ctpvNm: "인천광역시", sggNm: "인천광역시교육청", servDtlLink: "l"}).sigungu, null);
+  assert.equal(toLocal({servId: "c", servNm: "x", ctpvNm: "경기도", sggNm: "가평군", servDtlLink: "l"}).sigungu, "가평군");
+});

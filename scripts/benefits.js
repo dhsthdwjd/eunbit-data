@@ -55,7 +55,8 @@ function toLocal(r) {
     summary: str(r.servDgst),
     org: str(r.bizChrDeptNm),
     region: regionOf(r.ctpvNm),
-    sigungu: str(r.sggNm),
+    // 시도 단위 지원은 시군구가 "-"나 교육청 이름으로 와서, 시·군·구로 끝나는 이름만 쓴다 (나머지는 시도 전체 지원)
+    sigungu: /(시|군|구)$/.test(str(r.sggNm) ?? "") ? str(r.sggNm) : null,
     type: str(r.srvPvsnNm),
     cycle: str(r.sprtCycNm),
     apply: str(r.aplyMtdNm),
