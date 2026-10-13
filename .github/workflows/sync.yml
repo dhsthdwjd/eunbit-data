@@ -43,6 +43,11 @@ jobs:
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
 
+      - name: 지원금 목록 (하루 한 번)
+        run: node scripts/benefits.js
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+
       - name: 바뀌었으면 커밋
         run: |
           if git diff --quiet -- docs; then
